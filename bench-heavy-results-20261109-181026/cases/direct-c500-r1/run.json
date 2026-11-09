@@ -1,0 +1,111 @@
+{
+  "id": "direct-c500-r1",
+  "path": "direct",
+  "concurrency": 500,
+  "repeat": 1,
+  "duration_requested": 20,
+  "start_utc": "2026-11-09T11:11:09.536085+00:00",
+  "end_utc": "2026-11-09T11:11:32.576445+00:00",
+  "elapsed": 23.04035989008844,
+  "returncode": 0,
+  "cgroup_before": {
+    "envoy-lab-control-plane": {
+      "usage_usec": 9525783059,
+      "user_usec": 6517124716,
+      "system_usec": 3008658343,
+      "nr_periods": 288621,
+      "nr_throttled": 660,
+      "throttled_usec": 1346498025
+    },
+    "envoy-lab-worker": {
+      "usage_usec": 2219256359,
+      "user_usec": 1385065019,
+      "system_usec": 834191340,
+      "nr_periods": 283622,
+      "nr_throttled": 0,
+      "throttled_usec": 0
+    },
+    "envoy-lab-worker2": {
+      "usage_usec": 12309635937,
+      "user_usec": 8343343606,
+      "system_usec": 3966292331,
+      "nr_periods": 284503,
+      "nr_throttled": 0,
+      "throttled_usec": 0
+    },
+    "envoy-lab-worker3": {
+      "usage_usec": 9212071657,
+      "user_usec": 3016788174,
+      "system_usec": 6195283483,
+      "nr_periods": 279873,
+      "nr_throttled": 1,
+      "throttled_usec": 103477
+    },
+    "envoy-lab-worker4": {
+      "usage_usec": 8833973698,
+      "user_usec": 2855881895,
+      "system_usec": 5978091802,
+      "nr_periods": 277919,
+      "nr_throttled": 1,
+      "throttled_usec": 151685
+    },
+    "envoy-lab-worker5": {
+      "usage_usec": 3746948110,
+      "user_usec": 2578760497,
+      "system_usec": 1168187612,
+      "nr_periods": 285901,
+      "nr_throttled": 18,
+      "throttled_usec": 7660032
+    }
+  },
+  "cgroup_after": {
+    "envoy-lab-control-plane": {
+      "usage_usec": 9531326921,
+      "user_usec": 6520958509,
+      "system_usec": 3010368412,
+      "nr_periods": 288852,
+      "nr_throttled": 660,
+      "throttled_usec": 1346498025
+    },
+    "envoy-lab-worker": {
+      "usage_usec": 2220377048,
+      "user_usec": 1385712246,
+      "system_usec": 834664802,
+      "nr_periods": 283844,
+      "nr_throttled": 0,
+      "throttled_usec": 0
+    },
+    "envoy-lab-worker2": {
+      "usage_usec": 12313521141,
+      "user_usec": 8346257704,
+      "system_usec": 3967263436,
+      "nr_periods": 284728,
+      "nr_throttled": 0,
+      "throttled_usec": 0
+    },
+    "envoy-lab-worker3": {
+      "usage_usec": 9273438865,
+      "user_usec": 3031307234,
+      "system_usec": 6242131630,
+      "nr_periods": 280103,
+      "nr_throttled": 1,
+      "throttled_usec": 103477
+    },
+    "envoy-lab-worker4": {
+      "usage_usec": 8894449243,
+      "user_usec": 2869857525,
+      "system_usec": 6024591717,
+      "nr_periods": 278147,
+      "nr_throttled": 1,
+      "throttled_usec": 151685
+    },
+    "envoy-lab-worker5": {
+      "usage_usec": 3749059901,
+      "user_usec": 2580146074,
+      "system_usec": 1168913827,
+      "nr_periods": 286130,
+      "nr_throttled": 18,
+      "throttled_usec": 7660032
+    }
+  }
+}
