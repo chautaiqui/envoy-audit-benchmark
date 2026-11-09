@@ -1,0 +1,11 @@
+Prometheus targets: 24 UP: 24
+direct-c100-r1 : 13 metric queries with data, 0 errors
+direct-c1000-r1 : 13 metric queries with data, 0 errors
+direct-c2000-r1 : 13 metric queries with data, 0 errors
+direct-c500-r1 : 13 metric queries with data, 0 errors
+envoy-c100-r1 : 13 metric queries with data, 0 errors
+envoy-c1000-r1 : 13 metric queries with data, 0 errors
+envoy-c2000-r1 : 13 metric queries with data, 0 errors
+envoy-c500-r1 : 13 metric queries with data, 0 errors
+Prometheus results: /root/envoy-audit-benchmark/bench-heavy-results-20261109-173258/prometheus
+

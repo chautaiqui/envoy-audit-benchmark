@@ -1,0 +1,22 @@
+{
+  "profile": "heavy",
+  "node_ip": "172.18.0.7",
+  "hostname": "httpbin.dev.local",
+  "duration": 25,
+  "repeats": 1,
+  "concurrencies": [
+    100,
+    500,
+    1000,
+    2000
+  ],
+  "keepalive": true,
+  "max_failure_pct": 2.0,
+  "sample_interval": 5,
+  "public_url": "http://172.18.0.7:32021/bench",
+  "direct_url": "http://172.18.0.7:30887/bench",
+  "public_service": "envoy-infra-gateway-public-gateway-6703405f",
+  "external_traffic_policy": "Local",
+  "timestamp": "2026-11-09T10:32:58.503199+00:00",
+  "tool": "hey"
+}

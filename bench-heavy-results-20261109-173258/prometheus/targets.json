@@ -1,0 +1,146 @@
+[
+  {
+    "job": "kubernetes-api-servers",
+    "instance": "172.18.0.5:6443",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes",
+    "instance": "envoy-lab-worker",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes",
+    "instance": "envoy-lab-worker2",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes",
+    "instance": "envoy-lab-worker3",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes",
+    "instance": "envoy-lab-worker4",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes",
+    "instance": "envoy-lab-worker5",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes",
+    "instance": "envoy-lab-control-plane",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes-cadvisor",
+    "instance": "envoy-lab-control-plane",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes-cadvisor",
+    "instance": "envoy-lab-worker",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes-cadvisor",
+    "instance": "envoy-lab-worker2",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes-cadvisor",
+    "instance": "envoy-lab-worker3",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes-cadvisor",
+    "instance": "envoy-lab-worker4",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-nodes-cadvisor",
+    "instance": "envoy-lab-worker5",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-pods",
+    "instance": "10.244.2.7:19001",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-pods",
+    "instance": "10.244.3.11:19001",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-pods",
+    "instance": "10.244.2.5:19001",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-pods",
+    "instance": "10.244.5.3:19001",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-pods",
+    "instance": "10.244.2.8:19001",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-pods",
+    "instance": "10.244.4.7:19001",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-service-endpoints",
+    "instance": "10.244.0.2:9153",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-service-endpoints",
+    "instance": "10.244.0.4:9153",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-service-endpoints",
+    "instance": "10.244.4.3:8080",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "kubernetes-service-endpoints",
+    "instance": "10.244.4.3:8081",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "prometheus",
+    "instance": "localhost:9090",
+    "health": "up",
+    "lastError": ""
+  }
+]

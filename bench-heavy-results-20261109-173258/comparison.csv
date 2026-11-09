@@ -1,0 +1,5 @@
+concurrency,repeat,direct_rps,envoy_rps,envoy_to_direct_rps_pct,direct_p95_ms,envoy_p95_ms,direct_p99_ms,envoy_p99_ms,p99_delta_ms,direct_fail_pct,envoy_fail_pct
+100,1,160972.4127,48268.9101,29.99,,,,,,0.0,0.0
+500,1,144442.9202,50344.5586,34.85,,,,,,0.0,0.0
+1000,1,97857.9242,46420.5066,47.44,,,,,,0.0,0.0
+2000,1,92734.227,42791.6335,46.14,,,,,,0.0,0.0
