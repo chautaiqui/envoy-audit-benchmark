@@ -6,7 +6,7 @@ import argparse, datetime as dt, json, os, re, shlex, shutil, signal, statistics
 from pathlib import Path
 
 NODES = ['envoy-lab-control-plane','envoy-lab-worker','envoy-lab-worker2','envoy-lab-worker3','envoy-lab-worker4','envoy-lab-worker5']
-PROFILES = {'quick':[100,250,500], 'heavy':[250,500,1000,2000,4000], 'extreme':[1000,2000,4000,8000], 'soak':[500]}
+PROFILES = {'quick':[100,250,500], 'heavy':[250,500,1000,2000,4000], 'extreme':[1000,2000,4000,8000], 'soak':[500], 'burst':[500,2000,500,4000], 'saturation':[500,1000,2000,4000,6000,8000]}
 
 def command(args, timeout=20, check=False, env=None):
     try:
@@ -122,10 +122,19 @@ def main():
     p.add_argument('--max-failure-pct',type=float,default=2.0)
     p.add_argument('--allow-extreme',action='store_true')
     p.add_argument('--out',default=None)
+    p.add_argument('--concurrencies',default=None,help='comma-separated concurrency sequence, e.g. 100,500,1000,2000')
+    p.add_argument('--no-keepalive',action='store_true',help='benchmark new TCP connections per request')
+    p.add_argument('--skip-prometheus',action='store_true',help='do not attempt Prometheus enrichment')
     args=p.parse_args()
-    if args.profile=='extreme' and not args.allow_extreme:p.error('Extremely high concurrency needs --allow-extreme')
+    if args.profile in ('extreme','saturation') and not args.allow_extreme:p.error('Extremely high concurrency needs --allow-extreme')
     args.duration=args.duration or (900 if args.profile=='soak' else 120 if args.profile=='extreme' else 60)
     args.repeats=args.repeats or (1 if args.profile=='soak' else 2 if args.profile=='extreme' else 3)
+    if args.concurrencies:
+        try: levels=[int(x.strip()) for x in args.concurrencies.split(',')]
+        except ValueError: p.error('Invalid --concurrencies')
+        if not levels or any(x<1 or x>10000 for x in levels):p.error('concurrencies must be 1..10000')
+    else: levels=PROFILES[args.profile]
+    if max(levels)>4000 and not args.allow_extreme:p.error('Above 4000 concurrency requires --allow-extreme')
     if not(10<=args.duration<=3600 and 1<=args.repeats<=10 and 2<=args.interval<=60 and 0<=args.cooldown<=600 and 0<=args.max_failure_pct<=100):p.error('Invalid numeric parameters')
     for exe in ['kubectl','docker','curl','hey']:
         if not shutil.which(exe):raise SystemExit(f'Missing command: {exe}')
@@ -147,10 +156,23 @@ def main():
     out=Path(args.out or f'bench-heavy-results-{dt.datetime.now().strftime("%Y%m%d-%H%M%S")}').resolve()
     if out.exists():raise SystemExit(f'Output directory already exists: {out}')
     out.mkdir(parents=True)
-    meta={'profile':args.profile,'node_ip':args.node_ip,'hostname':args.hostname,'duration':args.duration,'repeats':args.repeats,'concurrencies':PROFILES[args.profile], 'max_failure_pct':args.max_failure_pct, 'sample_interval':args.interval,'public_url':env_url,'direct_url':direct_url,'public_service':public['metadata']['name'],'external_traffic_policy':public['spec'].get('externalTrafficPolicy','Cluster'),'timestamp':dt.datetime.now(dt.timezone.utc).isoformat(),'tool':'hey'}
+    meta={'profile':args.profile,'node_ip':args.node_ip,'hostname':args.hostname,'duration':args.duration,'repeats':args.repeats,'concurrencies':levels, 'keepalive':not args.no_keepalive, 'max_failure_pct':args.max_failure_pct, 'sample_interval':args.interval,'public_url':env_url,'direct_url':direct_url,'public_service':public['metadata']['name'],'external_traffic_policy':public['spec'].get('externalTrafficPolicy','Cluster'),'timestamp':dt.datetime.now(dt.timezone.utc).isoformat(),'tool':'hey'}
     (out/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n')
     print(f'Output directory: {out}',flush=True)
     save_snapshot(out)
+    def finalize():
+        if not args.skip_prometheus:
+            enrich_script=Path(__file__).with_name('prom_enrich.py')
+            result=subprocess.run([sys.executable,str(enrich_script),str(out)],capture_output=True,text=True,timeout=240)
+            (out/'prometheus-enrich.log').write_text(result.stdout+'\n'+result.stderr)
+            if result.returncode:print('Prometheus enrichment unavailable; see prometheus-enrich.log',flush=True)
+        from report import generate
+        generate(out)
+        dashboard=Path(__file__).with_name('dashboard.py')
+        result=subprocess.run([sys.executable,str(dashboard),str(out)],capture_output=True,text=True,timeout=45)
+        (out/'dashboard-build.log').write_text(result.stdout+'\n'+result.stderr)
+        if result.returncode:print('HTML dashboard generation failed; see dashboard-build.log',flush=True)
+
     # Warm up both paths without mixing warm-up samples into measured runs.
     for path,uri in [('direct',direct_url),('envoy',env_url)]:
         cmd=['hey','-z','20s','-c','50','-t','15']
@@ -164,7 +186,7 @@ def main():
         if warm.returncode!=0:raise RuntimeError(f'Warm-up {path} failed: inspect warmup-{path}.txt')
     run_ids=[]
     # stagger and reverse pair order every repeat to reduce systematic time bias
-    for c in PROFILES[args.profile]:
+    for c in levels:
         for rep in range(1,args.repeats+1):
             paths=['direct','envoy'] if rep%2 else ['envoy','direct']
             for path in paths:
@@ -172,11 +194,12 @@ def main():
                 casepath=out/'cases'/run_id;casepath.mkdir(parents=True)
                 uri=direct_url if path=='direct' else env_url
                 heyargs=['hey','-z',f'{args.duration}s','-c',str(c),'-t','15']
+                if args.no_keepalive:heyargs.append('-disable-keepalive')
                 if path=='envoy':heyargs+=['-host',args.hostname]
                 heyargs.append(uri)
                 print(f'\n>>> {run_id}: {args.duration}s',flush=True)
                 sampler=Sampler(casepath,args.interval)
-                startstats=cgroup_stats();sampler.start();start=time.monotonic()
+                startstats=cgroup_stats();sampler.start();start=time.monotonic();started_utc=dt.datetime.now(dt.timezone.utc).isoformat()
                 environ=os.environ.copy()
                 for name in ['HTTP_PROXY','HTTPS_PROXY','http_proxy','https_proxy','ALL_PROXY','all_proxy']:environ.pop(name,None)
                 try:
@@ -193,7 +216,8 @@ def main():
                     sampler.close()
                 endstats=cgroup_stats()
                 elapsed=time.monotonic()-start
-                (casepath/'run.json').write_text(json.dumps({'id':run_id,'path':path,'concurrency':c,'repeat':rep,'duration_requested':args.duration,'elapsed':elapsed,'returncode':rc,'cgroup_before':startstats,'cgroup_after':endstats},indent=2)+'\n')
+                ended_utc=dt.datetime.now(dt.timezone.utc).isoformat()
+                (casepath/'run.json').write_text(json.dumps({'id':run_id,'path':path,'concurrency':c,'repeat':rep,'duration_requested':args.duration,'start_utc':started_utc,'end_utc':ended_utc,'elapsed':elapsed,'returncode':rc,'cgroup_before':startstats,'cgroup_after':endstats},indent=2)+'\n')
                 run_ids.append(run_id)
                 from report import parse_hey, count_failure_pct
                 stats=parse_hey(casepath/'hey.txt')
@@ -203,14 +227,12 @@ def main():
                     reason=f'Stopped on {run_id}: rc={rc}, failure={pct}%, threshold={args.max_failure_pct}%'
                     (out/'STOP_REASON.txt').write_text(reason+'\n')
                     print('SAFETY STOP:',reason,flush=True)
-                    from report import generate
-                    generate(out)
+                    finalize()
                     return 2
                 if args.cooldown:
                     print(f'Cooldown {args.cooldown}s...',flush=True)
                     time.sleep(args.cooldown)
-    from report import generate
-    generate(out)
+    finalize()
     print('\nCOMPLETE:',out,flush=True)
     return 0
 

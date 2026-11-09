@@ -1,80 +1,102 @@
-# Envoy Gateway — heavy benchmark kit (kind, 6 nodes)
+# Envoy Gateway Benchmark v3 — Prometheus + Charts
 
-## Safety and intent
+**Target:** existing 6-node kind lab, Public Envoy Gateway NodePort and `platform-test/bench-direct` NodePort. Does not apply/change Kubernetes resources. Collection uses Prometheus already running in `monitoring`, no additional Prometheus installation. Only run intense tests in the isolated lab.
 
-Run **only on the dedicated lab VM**. Very high concurrency can overload the VM, Docker bridge/NAT, conntrack, kube-proxy and load generator as well as Envoy. Avoid on shared production nodes. Does not modify Kubernetes configuration. Existing `platform-test/bench-direct` and `platform-test/bench-through-envoy` must already be deployed and healthy. HTTP route must match host `httpbin.dev.local`, path `/bench`.
+## Fixes over v2
 
-Benchmark order: paired Direct Backend NodePort vs Envoy Public Gateway NodePort. A 60-second default run at each concurrency is repeated three times (order reversed every second repetition), with resource sampling and a 15-second cooldown. This long run can be interrupted with Ctrl+C; interrupted results should not be presented as final capacity.
+- Prometheus `/api/v1/query_range` backfill for each case (HTTP request rate, connections, errors, upstream, Envoy memory and optional cAdvisor CPU/RAM), including historical v2 runs if retention still covers the run timestamps.
+- Captures Prometheus `/api/v1/targets` health to distinguish no data from scrape failures.
+- Offline `dashboard.html`: SVG charts for RPS, p99, errors, CPU/RAM, host utilization; comparison tables with individual cases; Prom metrics appendix.
+- Separate CSVs and `report.md` retained. If `kubectl top` CPU is N/A, reports can use Prometheus cAdvisor metrics as fallback when available.
+- `run.py` adds `--concurrencies` and `--no-keepalive`, plus burst and saturation profiles. Includes start/end UTC for new cases.
 
-**Prerequisites**: `python3`, `kubectl`, `docker`, `hey`, `curl`; Kubernetes metrics-server for `kubectl top`; proper Docker socket access. Run as root on the VM, with kind context `kind-envoy-lab`. Host's HCM proxy is unset **only for hey** to ensure local traffic does not traverse proxy.
+## Setup
 
 ```bash
-kubectl config current-context
-kubectl get gateway -A
-kubectl get pods -n envoy-gateway-system -o wide
+cd /root
+unzip envoy-benchmark-v3.zip
+cd envoy-benchmark-v3
+python3 -m py_compile scripts/*.py
+kubectl config current-context  # expected kind-envoy-lab
+kubectl -n monitoring get svc prometheus
+kubectl -n envoy-gateway-system get pods -o wide
 kubectl get pods -n platform-test -l app=bench-api -o wide
-kubectl top pods -n envoy-gateway-system
+kubectl get httproute bench-through-envoy -n platform-test
 ```
 
-**Important:** Public Envoy Proxy previously ran on Worker 2 + Worker 3; before capacity-grade benchmarking fix placement to Gateway Workers 1/2 by editing the authoritative `EnvoyProxy` resource (not Deployment). Ensure NodePort connectivity and actual two proxy endpoints. With `externalTrafficPolicy: Cluster` all nodes can forward, but additional network hop remains possible. Use one fixed node IP for all tests, and record traffic policy.
+Verify Prometheus has active Envoy and kubelet/cAdvisor scrape targets. Missing container CPU series means resource charts may rely on `kubectl top` and cgroup/Docker samples.
 
-## Commands
-
-Extract the package to `/root/envoy-heavy-benchmark/` and run:
+## Enrich the **existing v2** results immediately (no need to rerun)
 
 ```bash
-cd /root/envoy-heavy-benchmark
+cd /root/envoy-benchmark-v3
+OLD=/root/envoy-audit-benchmark/bench-heavy-results-20261109-164617
+python3 scripts/prom_enrich.py "$OLD"
+python3 scripts/report.py "$OLD"
+python3 scripts/dashboard.py "$OLD"
+# Open the local static report on Windows using SCP:
+# scp -P 2205 root@100.111.17.57:$OLD/dashboard.html .
+```
+
+If Prometheus retention has not expired, historical cases can be enriched using timestamps in `resources.jsonl`. **The old runner did not save exact start/end UTC**: these windows are inferred from available resource samples, so Prometheus rate estimates are approximate. No metric will be invented when unavailable.
+
+## New scenarios
+
+```bash
+cd /root/envoy-benchmark-v3
+# A 1-run verification, then check summary and chart before doing more
 python3 scripts/run.py --profile quick --node-ip 172.18.0.7 --duration 30 --repeats 1
+
+# Main capacity curve with 3 repeats per path, default 60 sec per case
 python3 scripts/run.py --profile heavy --node-ip 172.18.0.7
-# Opt-in: 8000 concurrent connections. Run only after checking host and service limits.
-python3 scripts/run.py --profile extreme --node-ip 172.18.0.7 --allow-extreme
-# Optional 15-minute soak test, sequential direct then Envoy
-python3 scripts/run.py --profile soak --node-ip 172.18.0.7 --duration 900
+
+# Step/load-unload burst (not fixed QPS)
+python3 scripts/run.py --profile burst --node-ip 172.18.0.7 --duration 45 --repeats 2
+
+# Controlled custom stress stages (requires opt-in over 4k concurrency)
+python3 scripts/run.py --profile heavy --concurrencies 500,1000,2000,3000,4000 --node-ip 172.18.0.7 --duration 90 --repeats 3
+python3 scripts/run.py --profile saturation --node-ip 172.18.0.7 --allow-extreme --duration 60 --repeats 1
+
+# Connection churn: a new TCP connection per request (overhead may be huge)
+python3 scripts/run.py --profile quick --node-ip 172.18.0.7 --duration 30 --repeats 1 --no-keepalive
+
+# Long-running stability test
+python3 scripts/run.py --profile soak --node-ip 172.18.0.7 --duration 900 --repeats 1
 ```
 
-Heavy profile cases are 250, 500, 1000, 2000, 4000 concurrency, each Direct and Envoy, three repetitions, 60 seconds each, with cooldowns. Expected time is over 30 minutes. If throughput stops rising, latency and failures spike or load-generator CPU saturates, stop instead of increasing concurrency.
+`run.py` performs HTTP 200 smoke tests, validates backend/Envoy deployments and aborts subsequent cases if failure rate > 2%, load generator fails, or output is unparseable. **It is not an in-flight emergency kill switch**; you must watch the node, available FD/conntrack, 5xx and load-generator CPU and stop if necessary. Run saturation only after lower stages are stable. All workloads are serial and may last a long time. Current NodePort `externalTrafficPolicy=Cluster` makes node choice less important for connectivity, but can add network hops; record it and keep it fixed.
 
-Every case automatically samples: `docker stats` for all 6 kind nodes; `kubectl top pods -A` for Envoy and backend; `kubectl top nodes`; VM host `/proc/stat`, `/proc/meminfo` and load average; cgroup CPU throttle before/after each case. Some metric series may be missing if metrics-server hasn't collected them yet. Monitoring tools themselves add slight overhead.
+## Prometheus connection
 
-At the end, reports are automatically generated. To regenerate or update reports:
+The collector defaults to a temporary loopback-only `kubectl -n monitoring port-forward svc/prometheus LOCALPORT:80` established **after** the cases. It uses the HTTP API and does not require exposing port 9090 publicly. Alternatively:
 
 ```bash
-RESULT_DIR=$(ls -dt bench-heavy-results-* | head -1)
-python3 scripts/report.py "$RESULT_DIR"
-cat "$RESULT_DIR/report.md"
-column -s, -t < "$RESULT_DIR/summary.csv"
-tar -czf "${RESULT_DIR}.tar.gz" "$RESULT_DIR"
+python3 scripts/prom_enrich.py "$OLD" --prom-url http://127.0.0.1:9090
 ```
 
-Files:
-- `report.md`: measured RPS/latency/status/error and median comparisons.
-- `summary.csv`: per-case measurements + resource aggregates.
-- `comparison.csv`: paired Direct vs Envoy.
-- `pod-resources.csv`: CPU/memory per Pod.
-- `docker-node-resources.csv`: per-kind node Docker CPU%, memory and sampled network transfer.
-- `cpu-throttling.csv`: cgroup throttling by node.
-- `cases/<case>/hey.txt`: original load-generator output.
-- `cases/<case>/resources.jsonl`: raw samples including host utilization.
-- `snapshot/`: Kubernetes objects and Docker resource settings before run.
-- `STOP_REASON.txt`: reason if safety stop occurred.
+`prometheus/targets.json` captures scrape target statuses. `prometheus/<case>.json` includes raw PromQL and time series, with empty data reported as unavailable (N/A). Because stats often use `rate(...[1m])`, short cases and close-spaced cases can have smoothing/overlap. Prometheus also needs to collect container metrics; installing Prometheus/Grafana alone is not proof those metrics exist.
 
-## Test profiles
+## Report artifacts
 
-| Profile | Concurrent clients | Duration per case | Repetitions | When to use |
-|---|---|---|---|---|
-| quick | 100, 250, 500 | 60s by default | 3 | smoke and baseline |
-| heavy | 250, 500, 1000, 2000, 4000 | 60s | 3 | high load saturation search |
-| extreme | 1000, 2000, 4000, 8000 | 120s | 2 | optional stress, possible network/FD exhaustion |
-| soak | 500 | 900s | 1 | prolonged memory/CPU stability |
+```
+bench-heavy-results-*/
+  metadata.json
+  snapshot/
+  cases/<case>/hey.txt, run.json, resources.jsonl
+  prometheus/targets.json, coverage.json, <case>.json
+  summary.csv, comparison.csv, pod-resources.csv
+  docker-node-resources.csv, cpu-throttling.csv
+  report.md
+  dashboard.html
+```
 
-The script automatically **stops further cases when failure percentage exceeds 2%, or hey exits with an error, or statistics are unavailable**. Lowering that guard requires intentional CLI override `--max-failure-pct`.
+The HTML file works offline (static SVG, no JS/CDN). Download with Windows PowerShell `scp -P 2205 root@100.111.17.57:/absolute/path/dashboard.html .` and open in browser.
 
-## How to evaluate
+## Interpret correctly
 
-1. Compare each concurrency by p95/p99 and error percentage, not RPS alone.
-2. Verify that the load generator has capacity before attributing lower RPS to Envoy.
-3. Compare Envoy pod CPU total and per-node Docker CPU to the configured quotas; check throttling seconds/count per node.
-4. Determine the last sustainable level with low errors, acceptable p99 and no resource saturation.
-5. Re-test from a **separate load-generator VM** before using numbers for production capacity projections.
-
-Use Grafana simultaneously to check Envoy per-Pod RPS, upstream latency, errors, connections, and Kubernetes CPU throttling. The kit collects host/kubectl/docker stats, not Prometheus time series automatically.
+- `hey` is **closed-loop concurrency**, not guaranteed target QPS. Saturation can be in VM, Docker bridge, conntrack, kube-proxy, TLS, Nginx or client, not necessarily Envoy.
+- Compare identical backend, connection reuse and network path in paired runs, ideally with 3 or more repetitions and external load generator.
+- The v2 report showing 1,000,000 responses in each case reflects a fixed request-count run; inspect raw `hey.txt`, `run.json` and CLI command to verify actual run duration. A `Requests/sec` alone is insufficient for capacity claims.
+- CPU use in millicores is not the same as allocated CPU quotas; quantify CPU throttling, Pod CPU limits and node cgroup limits independently.
+- `envoy_downstream_rps` is an aggregate from any scraped Envoy proxies; it may include unrelated routes and may not exactly match client `hey` RPS. Use per-cluster/per-route labels when configured for production-quality results.
+- Prometheus series may be absent (metrics not scraped, no cAdvisor exporter, retention elapsed) and are shown as N/A, never as zero.

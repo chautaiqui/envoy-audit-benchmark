@@ -13,10 +13,10 @@ def findnum(pattern,s):
 def parse_hey(path):
     s=Path(path).read_text(errors='replace') if Path(path).exists() else ''
     result={'rps':findnum(r'^\s*Requests/sec:\s*'+FLOAT,s),
-      'duration_s':findnum(r'^\s*Total:\s*'+FLOAT+r'\s*secs',s),
+      'duration_s':findnum(r'^\s*Total:\s*'+FLOAT+r'\s*(?:secs|seconds|s)?',s),
       'avg_ms':None,'p50_ms':None,'p90_ms':None,'p95_ms':None,'p99_ms':None,
       'http_200':0,'http_non200':0,'transport_errors':0,'status':{}}
-    for key,regex in [('avg_ms',r'^\s*Average:\s*'+FLOAT+r'\s*secs'),('p50_ms',r'^\s*50%\s+in\s+'+FLOAT+r'\s*secs'),('p90_ms',r'^\s*90%\s+in\s+'+FLOAT+r'\s*secs'),('p95_ms',r'^\s*95%\s+in\s+'+FLOAT+r'\s*secs'),('p99_ms',r'^\s*99%\s+in\s+'+FLOAT+r'\s*secs')]:
+    for key,regex in [('avg_ms',r'^\s*Average:\s*'+FLOAT+r'\s*(?:secs|seconds|s)?'),('p50_ms',r'^\s*50(?:\.0)?%\s+in\s+'+FLOAT+r'\s*(?:secs|seconds|s)?'),('p90_ms',r'^\s*90(?:\.0)?%\s+in\s+'+FLOAT+r'\s*(?:secs|seconds|s)?'),('p95_ms',r'^\s*95(?:\.0)?%\s+in\s+'+FLOAT+r'\s*(?:secs|seconds|s)?'),('p99_ms',r'^\s*99(?:\.0)?%\s+in\s+'+FLOAT+r'\s*(?:secs|seconds|s)?')]:
         n=findnum(regex,s);result[key]=round(n*1000,4) if n is not None else None
     section=''
     for line in s.splitlines():
@@ -148,6 +148,28 @@ def generate(root):
           'backend_mem_sum_peak_mib':round(sum(x['mem_max_mib'] for x in backend if x['mem_max_mib'] is not None),3) if backend else None,
           'node_throttled_s_sum':round(sum(x['throttled_s'] for x in r['throttling']),3),
           'node_throttled_count_sum':sum(x['nr_throttled'] for x in r['throttling'] if x['nr_throttled'] is not None)}
+        # Use Prometheus as fallback when kubectl top has no pod samples; preserve measured provenance.
+        prom_path=root/'prometheus'/f"{j['id']}.json"
+        if prom_path.exists():
+            try:
+                prom=json.loads(prom_path.read_text())
+                def pm(key,kind='avg'):
+                    vals=[float(v) for metric in prom.get('series',{}).get(key,[]) for t,v in metric.get('points',[]) if v is not None]
+                    return (statistics.mean(vals) if kind=='avg' else max(vals)) if vals else None
+                row['prom_envoy_rps_avg']=pm('envoy_downstream_rps')
+                row['prom_envoy_pod_cpu_m_avg']=pm('envoy_pod_cpu_cores')*1000 if pm('envoy_pod_cpu_cores') is not None else None
+                row['prom_envoy_pod_mem_peak_mib']=pm('envoy_pod_memory_bytes','peak')/1024**2 if pm('envoy_pod_memory_bytes','peak') is not None else None
+                row['prom_backend_pod_cpu_m_avg']=pm('backend_pod_cpu_cores')*1000 if pm('backend_pod_cpu_cores') is not None else None
+                row['prom_backend_pod_mem_peak_mib']=pm('backend_pod_memory_bytes','peak')/1024**2 if pm('backend_pod_memory_bytes','peak') is not None else None
+                row['prom_envoy_connections_peak']=pm('envoy_active_connections','peak')
+                row['prom_envoy_5xx_rps_avg']=pm('envoy_upstream_5xx_rps')
+                row['prom_cpu_throttle_periods_rate']=pm('envoy_pod_cpu_throttle_rps')
+                if row['envoy_cpu_sum_avg_m'] is None and row['prom_envoy_pod_cpu_m_avg'] is not None:row['envoy_cpu_sum_avg_m']=round(row['prom_envoy_pod_cpu_m_avg'],2)
+                if row['envoy_mem_sum_peak_mib'] is None and row['prom_envoy_pod_mem_peak_mib'] is not None:row['envoy_mem_sum_peak_mib']=round(row['prom_envoy_pod_mem_peak_mib'],2)
+                if row['backend_cpu_sum_avg_m'] is None and row['prom_backend_pod_cpu_m_avg'] is not None:row['backend_cpu_sum_avg_m']=round(row['prom_backend_pod_cpu_m_avg'],2)
+                if row['backend_mem_sum_peak_mib'] is None and row['prom_backend_pod_mem_peak_mib'] is not None:row['backend_mem_sum_peak_mib']=round(row['prom_backend_pod_mem_peak_mib'],2)
+            except (OSError,ValueError,TypeError,ZeroDivisionError) as e:
+                row['prometheus_parse_error']=str(e)
         allrows.append(row)
         for p in r['pods']:podrows.append({'case':j['id'],**p})
         for d in r['docker']:noderows.append({'case':j['id'],**d})
@@ -202,7 +224,7 @@ def generate(root):
       '- CPU throttling seconds are **summed across kind node cgroups**, not a single wall-clock stall; do not interpret directly as user-facing latency.',
       '- `docker stats` CPU% is per logical CPU: 100% ≈ one CPU core. Node quotas require a separate comparison with Docker inspect.',
       '- `kubectl top` samples are not an exact total CPU consumption measurement; unavailable metrics are N/A, never zero.',
-      '- Prometheus metrics, request bytes/second and TCP connection stats are not automatically available from this benchmark; compare with Grafana separately.',
+      '- Prometheus enrichment is optional via scripts/prom_enrich.py; missing data stays N/A. Queries use 1m rate windows.',
       '- `hey` uses a concurrency-driven workload; this is **not** a controlled open-loop fixed-QPS test.',
       '- Same-host kind benchmarking shares physical host CPU and I/O. For production capacity, use external load generator, pin workloads and repeat.',
       '- Review `STOP_REASON.txt` if present; failed cases must not be used to claim sustainable peak capacity.',
