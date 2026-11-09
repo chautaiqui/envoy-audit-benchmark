@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bench-nginx
+  namespace: platform-test
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      server_name _;
+      access_log off;
+      location / {
+        default_type text/plain;
+        return 200 "ok\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bench-api
+  namespace: platform-test
+spec:
+  replicas: 4
+  selector:
+    matchLabels: {app: bench-api}
+  template:
+    metadata:
+      labels: {app: bench-api}
+    spec:
+      nodeSelector: {node-group: backend}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels: {app: bench-api}
+      containers:
+        - name: nginx
+          image: nginx:stable-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - {name: http, containerPort: 8080}
+          resources:
+            requests: {cpu: 500m, memory: 128Mi}
+            limits: {cpu: "2", memory: 512Mi}
+          readinessProbe:
+            httpGet: {path: /bench, port: http}
+            periodSeconds: 3
+          volumeMounts:
+            - {name: config, mountPath: /etc/nginx/conf.d/default.conf, subPath: default.conf}
+      volumes:
+        - name: config
+          configMap: {name: bench-nginx}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bench-api
+  namespace: platform-test
+spec:
+  selector: {app: bench-api}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bench-direct
+  namespace: platform-test
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  selector: {app: bench-api}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bench-through-envoy
+  namespace: platform-test
+spec:
+  parentRefs:
+    - name: public-gateway
+      namespace: infra-gateway
+  hostnames:
+    - httpbin.dev.local
+  rules:
+    - matches:
+        - path: {type: PathPrefix, value: /bench}
+      backendRefs:
+        - {name: bench-api, port: 80}
