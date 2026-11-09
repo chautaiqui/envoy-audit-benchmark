@@ -1,0 +1,2 @@
+NAMESPACE       NAME             HOSTNAMES               AGE
+platform-test   httpbin-public   ["httpbin.dev.local"]   18m

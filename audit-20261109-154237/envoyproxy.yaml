@@ -1,0 +1,97 @@
+apiVersion: v1
+items:
+- apiVersion: gateway.envoyproxy.io/v1alpha1
+  kind: EnvoyProxy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.envoyproxy.io/v1alpha1","kind":"EnvoyProxy","metadata":{"annotations":{},"name":"internal-proxy","namespace":"infra-gateway"},"spec":{"provider":{"kubernetes":{"envoyDeployment":{"container":{"resources":{"limits":{"cpu":"4","memory":"4Gi"},"requests":{"cpu":"1","memory":"1Gi"}}},"replicas":2},"envoyService":{"type":"NodePort"}},"type":"Kubernetes"}}}
+    creationTimestamp: "2026-11-09T08:11:47Z"
+    generation: 1
+    name: internal-proxy
+    namespace: infra-gateway
+    resourceVersion: "46521"
+    uid: 54d558d6-617e-4812-8b86-1add3dea0eaf
+  spec:
+    logging:
+      level:
+        default: warn
+    provider:
+      kubernetes:
+        envoyDeployment:
+          container:
+            resources:
+              limits:
+                cpu: "4"
+                memory: 4Gi
+              requests:
+                cpu: "1"
+                memory: 1Gi
+          replicas: 2
+        envoyService:
+          externalTrafficPolicy: Local
+          type: NodePort
+      type: Kubernetes
+  status:
+    ancestors:
+    - ancestorRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: internal-gateway
+        namespace: infra-gateway
+      conditions:
+      - lastTransitionTime: "2026-11-09T08:11:47Z"
+        message: EnvoyProxy has been accepted.
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+- apiVersion: gateway.envoyproxy.io/v1alpha1
+  kind: EnvoyProxy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.envoyproxy.io/v1alpha1","kind":"EnvoyProxy","metadata":{"annotations":{},"name":"public-proxy","namespace":"infra-gateway"},"spec":{"provider":{"kubernetes":{"envoyDeployment":{"container":{"resources":{"limits":{"cpu":"6","memory":"8Gi"},"requests":{"cpu":"2","memory":"2Gi"}}},"replicas":2},"envoyService":{"type":"NodePort"}},"type":"Kubernetes"}}}
+    creationTimestamp: "2026-11-09T08:11:47Z"
+    generation: 1
+    name: public-proxy
+    namespace: infra-gateway
+    resourceVersion: "46523"
+    uid: f93d7ec3-2b20-4a92-bf94-e9b7c25e8e4f
+  spec:
+    logging:
+      level:
+        default: warn
+    provider:
+      kubernetes:
+        envoyDeployment:
+          container:
+            resources:
+              limits:
+                cpu: "6"
+                memory: 8Gi
+              requests:
+                cpu: "2"
+                memory: 2Gi
+          replicas: 2
+        envoyService:
+          externalTrafficPolicy: Local
+          type: NodePort
+      type: Kubernetes
+  status:
+    ancestors:
+    - ancestorRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: public-gateway
+        namespace: infra-gateway
+      conditions:
+      - lastTransitionTime: "2026-11-09T08:11:47Z"
+        message: EnvoyProxy has been accepted.
+        observedGeneration: 1
+        reason: Accepted
+        status: "True"
+        type: Accepted
+kind: List
+metadata:
+  resourceVersion: ""

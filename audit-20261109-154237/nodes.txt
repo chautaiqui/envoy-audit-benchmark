@@ -1,0 +1,7 @@
+NAME                      STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                       KERNEL-VERSION               CONTAINER-RUNTIME
+envoy-lab-control-plane   Ready    control-plane   5h39m   v1.36.4   172.18.0.5    <none>        Debian GNU/Linux 13 (trixie)   5.15.0-134-generic (amd64)   containerd://2.3.4
+envoy-lab-worker          Ready    <none>          5h39m   v1.36.4   172.18.0.2    <none>        Debian GNU/Linux 13 (trixie)   5.15.0-134-generic (amd64)   containerd://2.3.4
+envoy-lab-worker2         Ready    <none>          5h39m   v1.36.4   172.18.0.7    <none>        Debian GNU/Linux 13 (trixie)   5.15.0-134-generic (amd64)   containerd://2.3.4
+envoy-lab-worker3         Ready    <none>          5h39m   v1.36.4   172.18.0.6    <none>        Debian GNU/Linux 13 (trixie)   5.15.0-134-generic (amd64)   containerd://2.3.4
+envoy-lab-worker4         Ready    <none>          5h39m   v1.36.4   172.18.0.4    <none>        Debian GNU/Linux 13 (trixie)   5.15.0-134-generic (amd64)   containerd://2.3.4
+envoy-lab-worker5         Ready    <none>          5h39m   v1.36.4   172.18.0.3    <none>        Debian GNU/Linux 13 (trixie)   5.15.0-134-generic (amd64)   containerd://2.3.4

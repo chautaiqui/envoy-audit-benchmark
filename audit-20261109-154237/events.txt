@@ -1,0 +1,66 @@
+NAMESPACE              LAST SEEN   TYPE      REASON              OBJECT                                                                MESSAGE
+envoy-gateway-system   33m         Normal    Killing             pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-9kz6l         Stopping container envoy
+envoy-gateway-system   33m         Normal    Killing             pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-vbzxx         Stopping container envoy
+envoy-gateway-system   33m         Normal    Killing             pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-9kz6l         Stopping container shutdown-manager
+envoy-gateway-system   33m         Warning   Unhealthy           pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-9kz6l         Readiness probe failed: Get "http://10.244.5.2:19003/ready": dial tcp 10.244.5.2:19003: connect: connection refused
+envoy-gateway-system   33m         Normal    Killing             pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-vbzxx         Stopping container shutdown-manager
+envoy-gateway-system   33m         Warning   Unhealthy           pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-vbzxx         Readiness probe failed: Get "http://10.244.2.6:19003/ready": dial tcp 10.244.2.6:19003: connect: connection refused
+envoy-gateway-system   33m         Warning   FailedPreStopHook   pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-9kz6l         PreStopHook failed
+envoy-gateway-system   33m         Warning   FailedPreStopHook   pod/envoy-infra-gateway-ads-gateway-87534e26-86c59f6995-vbzxx         PreStopHook failed
+envoy-gateway-system   30m         Normal    SuccessfulCreate    replicaset/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b     Created pod: envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4
+envoy-gateway-system   30m         Normal    Scheduled           pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Successfully assigned envoy-gateway-system/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6 to envoy-lab-worker2
+envoy-gateway-system   30m         Normal    ScalingReplicaSet   deployment/envoy-infra-gateway-public-gateway-6703405f                Scaled up replica set envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b from 0 to 2
+envoy-gateway-system   30m         Normal    SuccessfulCreate    replicaset/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b     Created pod: envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f
+envoy-gateway-system   30m         Normal    SuccessfulCreate    replicaset/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb   Created pod: envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6
+envoy-gateway-system   30m         Normal    Scheduled           pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Successfully assigned envoy-gateway-system/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4 to envoy-lab-worker3
+envoy-gateway-system   30m         Normal    Scheduled           pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Successfully assigned envoy-gateway-system/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f to envoy-lab-worker2
+envoy-gateway-system   30m         Normal    Scheduled           pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Successfully assigned envoy-gateway-system/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv to envoy-lab-worker
+envoy-gateway-system   30m         Normal    ScalingReplicaSet   deployment/envoy-infra-gateway-internal-gateway-30557c5e              Scaled up replica set envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb from 0 to 2
+envoy-gateway-system   30m         Normal    SuccessfulCreate    replicaset/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb   Created pod: envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv
+envoy-gateway-system   30m         Normal    Pulling             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Pulling image "docker.io/envoyproxy/envoy:distroless-v1.39.0"
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Container image "docker.io/envoyproxy/gateway:v1.9.0" already present on machine and can be accessed by the pod
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Container created
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Container image "docker.io/envoyproxy/envoy:distroless-v1.39.0" already present on machine and can be accessed by the pod
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Container started
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Container created
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Container image "docker.io/envoyproxy/envoy:distroless-v1.39.0" already present on machine and can be accessed by the pod
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Container created
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Container image "docker.io/envoyproxy/envoy:distroless-v1.39.0" already present on machine and can be accessed by the pod
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Container created
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Container started
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Container image "docker.io/envoyproxy/gateway:v1.9.0" already present on machine and can be accessed by the pod
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Container image "docker.io/envoyproxy/gateway:v1.9.0" already present on machine and can be accessed by the pod
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Container started
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Container created
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Container created
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-mgp7f      Container started
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-9f7g6    Container started
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-internal-gateway-30557c5e-76b99d96bb-vxhvv    Container started
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Successfully pulled image "docker.io/envoyproxy/envoy:distroless-v1.39.0" in 8.372s (8.372s including waiting). Image size: 43278379 bytes.
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Container created
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Container started
+envoy-gateway-system   30m         Normal    Pulling             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Pulling image "docker.io/envoyproxy/gateway:v1.9.0"
+envoy-gateway-system   30m         Normal    Pulled              pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Successfully pulled image "docker.io/envoyproxy/gateway:v1.9.0" in 8.708s (8.708s including waiting). Image size: 74719442 bytes.
+envoy-gateway-system   30m         Normal    Created             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Container created
+envoy-gateway-system   30m         Normal    Started             pod/envoy-infra-gateway-public-gateway-6703405f-546b5d4b7b-wd9j4      Container started
+platform-test          18m         Normal    Scheduled           pod/httpbin-56bbf76b76-7zsm8                                          Successfully assigned platform-test/httpbin-56bbf76b76-7zsm8 to envoy-lab-worker4
+platform-test          18m         Normal    Scheduled           pod/httpbin-56bbf76b76-8xn6l                                          Successfully assigned platform-test/httpbin-56bbf76b76-8xn6l to envoy-lab-worker4
+platform-test          18m         Normal    ScalingReplicaSet   deployment/httpbin                                                    Scaled up replica set httpbin-56bbf76b76 from 0 to 4
+platform-test          18m         Normal    SuccessfulCreate    replicaset/httpbin-56bbf76b76                                         Created pod: httpbin-56bbf76b76-27nf9
+platform-test          18m         Normal    Scheduled           pod/httpbin-56bbf76b76-27nf9                                          Successfully assigned platform-test/httpbin-56bbf76b76-27nf9 to envoy-lab-worker3
+platform-test          18m         Normal    Pulled              pod/httpbin-56bbf76b76-7zsm8                                          Container image "ghcr.io/mccutchen/go-httpbin:latest" already present on machine and can be accessed by the pod
+platform-test          18m         Normal    SuccessfulCreate    replicaset/httpbin-56bbf76b76                                         Created pod: httpbin-56bbf76b76-7zsm8
+platform-test          18m         Normal    SuccessfulCreate    replicaset/httpbin-56bbf76b76                                         Created pod: httpbin-56bbf76b76-8ctws
+platform-test          18m         Normal    Scheduled           pod/httpbin-56bbf76b76-8ctws                                          Successfully assigned platform-test/httpbin-56bbf76b76-8ctws to envoy-lab-worker3
+platform-test          18m         Normal    SuccessfulCreate    replicaset/httpbin-56bbf76b76                                         Created pod: httpbin-56bbf76b76-8xn6l
+platform-test          18m         Normal    Pulled              pod/httpbin-56bbf76b76-8xn6l                                          Container image "ghcr.io/mccutchen/go-httpbin:latest" already present on machine and can be accessed by the pod
+platform-test          18m         Normal    Created             pod/httpbin-56bbf76b76-7zsm8                                          Container created
+platform-test          18m         Normal    Started             pod/httpbin-56bbf76b76-8ctws                                          Container started
+platform-test          18m         Normal    Created             pod/httpbin-56bbf76b76-8ctws                                          Container created
+platform-test          18m         Normal    Created             pod/httpbin-56bbf76b76-8xn6l                                          Container created
+platform-test          18m         Normal    Started             pod/httpbin-56bbf76b76-8xn6l                                          Container started
+platform-test          18m         Normal    Pulled              pod/httpbin-56bbf76b76-8ctws                                          Container image "ghcr.io/mccutchen/go-httpbin:latest" already present on machine and can be accessed by the pod
+platform-test          18m         Normal    Started             pod/httpbin-56bbf76b76-7zsm8                                          Container started
+platform-test          18m         Normal    Pulled              pod/httpbin-56bbf76b76-27nf9                                          Container image "ghcr.io/mccutchen/go-httpbin:latest" already present on machine and can be accessed by the pod
+platform-test          18m         Normal    Started             pod/httpbin-56bbf76b76-27nf9                                          Container started
+platform-test          18m         Normal    Created             pod/httpbin-56bbf76b76-27nf9                                          Container created
