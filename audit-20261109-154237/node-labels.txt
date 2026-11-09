@@ -1,7 +1,0 @@
-NAME                      STATUS   ROLES           AGE     VERSION   NODE-GROUP
-envoy-lab-control-plane   Ready    control-plane   5h39m   v1.36.4   control-plane
-envoy-lab-worker          Ready    <none>          5h39m   v1.36.4   gateway
-envoy-lab-worker2         Ready    <none>          5h39m   v1.36.4   gateway
-envoy-lab-worker3         Ready    <none>          5h39m   v1.36.4   backend
-envoy-lab-worker4         Ready    <none>          5h39m   v1.36.4   backend
-envoy-lab-worker5         Ready    <none>          5h39m   v1.36.4   monitoring

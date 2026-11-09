@@ -1,3 +1,0 @@
-node=172.18.0.7
-gateway=http://172.18.0.7:32021/bench
-direct=http://172.18.0.7:30887/bench

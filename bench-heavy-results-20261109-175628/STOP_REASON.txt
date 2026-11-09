@@ -1,1 +1,0 @@
-Stopped on envoy-c4000-r1: rc=0, failure=26.7594%, threshold=2.0%
