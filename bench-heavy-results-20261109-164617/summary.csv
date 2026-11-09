@@ -1,0 +1,7 @@
+id,path,concurrency,repeat,elapsed_s,run_exit_code,rps,duration_s,avg_ms,p50_ms,p90_ms,p95_ms,p99_ms,http_200,http_non200,transport_errors,completed_responses,total_outcomes,failure_pct,http_status,resource_samples,host_cpu_avg_pct,host_cpu_peak_pct,host_load1_peak,host_mem_peak_mib,envoy_cpu_peak_m,envoy_cpu_sum_avg_m,envoy_mem_sum_peak_mib,backend_cpu_sum_avg_m,backend_mem_sum_peak_mib,node_throttled_s_sum,node_throttled_count_sum
+direct-c100-r1,direct,100,1,33.04,0,148077.7291,30.0011,3.0,,,,,1000000,0,0,1000000,1000000,0.0,"{""200"": 1000000}",7,37.94,38.92,24.935,5.392,,,,,,0.0,0
+direct-c250-r1,direct,250,1,33.04,0,136564.8925,30.0036,7.5,,,,,1000000,0,0,1000000,1000000,0.0,"{""200"": 1000000}",7,39.163,40.5,26.623,5.414,,,,,,0.0,0
+direct-c500-r1,direct,500,1,33.06,0,133976.2892,30.006,15.0,,,,,1000000,0,0,1000000,1000000,0.0,"{""200"": 1000000}",7,39.978,40.65,26.297,5.428,,,,,,1.026,1
+envoy-c100-r1,envoy,100,1,33.08,0,49450.9864,30.0022,3.0,,,,,1000000,0,0,1000000,1000000,0.0,"{""200"": 1000000}",7,32.628,33.53,24.765,5.401,,,,,,0.0,0
+envoy-c250-r1,envoy,250,1,33.1,0,51514.989,30.0078,7.5,,,,,1000000,0,0,1000000,1000000,0.0,"{""200"": 1000000}",7,35.985,37.03,26.683,5.437,,,,,,0.0,0
+envoy-c500-r1,envoy,500,1,33.1,0,50521.6559,30.0067,15.0,,,,,1000000,0,0,1000000,1000000,0.0,"{""200"": 1000000}",7,36.378,37.79,23.647,5.47,,,,,,0.0,0
